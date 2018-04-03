@@ -2,10 +2,13 @@ package main
 
 import (
 	"bytes"
+	"flag"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"os"
 	"regexp"
+	"sort"
 	"time"
 )
 
@@ -16,6 +19,23 @@ type log_entry struct {
 	timestamp time.Time
 	action    string
 }
+
+// Methods for sort.Interface.
+type byTimestamp []log_entry
+
+func (t byTimestamp) Len() int {
+	return len(t)
+}
+
+func (t byTimestamp) Swap(i, j int) {
+	t[i], t[j] = t[j], t[i]
+}
+
+func (t byTimestamp) Less(i, j int) bool {
+	return t[i].timestamp.Unix() < t[j].timestamp.Unix()
+}
+
+// End of sort.Interface.
 
 func create_entry(ip, date, timestr, action []byte) log_entry {
 	_date := string(date)
@@ -71,17 +91,40 @@ func parse(content [][]byte) ([]log_entry, [][]byte) {
 }
 
 func main() {
-	if len(os.Args) != 2 {
-		println("Usage:", os.Args[0], "<file>")
+	// Set command line arg flags.
+	file := flag.String("file", "", "log file to analyze/parse")
+	resolvehost := flag.Bool("resolve", false, "resolve ip addr to hostnames")
+	flag.Parse()
+
+	if len(os.Args) < 2 || flag.NFlag() == 0 {
+		println("Usage:", os.Args[0], "[OPTIONS] --file <file>")
+		flag.PrintDefaults()
 		os.Exit(1)
 	}
 
-	data := read_file(os.Args[1])
+	data := read_file(*file)
 	lines := bytes.Split(data, []byte("\n"))
 
 	m, n := parse(lines)
 
 	fmt.Printf("Matches:     %v\n"+
 		"Nonmatches:  %v\n"+
-		"Total lines: %v\n", len(m), len(n), len(lines))
+		"Total lines: %v\n\n", len(m), len(n), len(lines))
+
+	sort.Sort(byTimestamp(m))
+	for _, v := range m {
+		fmt.Printf("%v\n", v.timestamp)
+
+		if *resolvehost {
+			names, err := net.LookupAddr(v.ip)
+			if err != nil {
+				fmt.Printf("%v\n%v", v.ip, v.action)
+			} else {
+				fmt.Printf("%v\n%v", names[0], v.action)
+			}
+		} else {
+			fmt.Printf("%v\n%v", v.ip, v.action)
+		}
+		fmt.Println("\n")
+	}
 }
