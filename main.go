@@ -18,8 +18,11 @@ type log_entry struct {
 }
 
 func create_entry(ip, date, timestr, action []byte) log_entry {
-	dt := string(date) + " " + string(timestr)
+	_date := string(date)
+	_timestr := string(timestr)
+	dt := _date + " " + _timestr
 	ts, _ := time.Parse("02/Jan/2006 15:04:05", dt)
+
 	return log_entry{string(ip),
 		string(date),
 		string(timestr),
