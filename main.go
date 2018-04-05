@@ -13,6 +13,29 @@ import (
 	"time"
 )
 
+type args struct {
+	file        *string
+	resolvehost *bool
+	group       *string
+}
+
+func parse_args() args {
+	// Set command line arg flags.
+	fi := flag.String("file", "", "log file to analyze/parse")
+	rh := flag.Bool("resolve", false, "resolve ip addr to hostnames")
+	gr := flag.String("group", "Ip",
+		"category to group entries by (default ip address)")
+	flag.Parse()
+
+	if len(os.Args) < 2 || flag.NFlag() == 0 {
+		println("Usage:", os.Args[0], "[OPTIONS] --file <file>")
+		flag.PrintDefaults()
+		os.Exit(1)
+	}
+
+	return args{fi, rh, gr}
+}
+
 type log_entry struct {
 	Ip        string
 	Date      string
@@ -138,7 +161,7 @@ func group_by(entries []log_entry, field reflect.StructField) [][]log_entry {
 	return grouped
 }
 
-func output(resolvehost *bool, entries []log_entry, field reflect.StructField) {
+func output(arguments *args, entries []log_entry, field reflect.StructField) {
 	for _, g := range group_by(entries, field) {
 		if len(g) == 0 {
 			continue
@@ -148,7 +171,7 @@ func output(resolvehost *bool, entries []log_entry, field reflect.StructField) {
 		for _, v := range g {
 			fmt.Printf("Timestamp: %v\n", v.Timestamp)
 
-			if *resolvehost {
+			if *arguments.resolvehost {
 				names, err := net.LookupAddr(v.Ip)
 				if err != nil {
 					fmt.Printf("IP:        %v\nAction:    %v", v.Ip, v.Action)
@@ -166,20 +189,9 @@ func output(resolvehost *bool, entries []log_entry, field reflect.StructField) {
 }
 
 func main() {
-	// Set command line arg flags.
-	file := flag.String("file", "", "log file to analyze/parse")
-	resolvehost := flag.Bool("resolve", false, "resolve ip addr to hostnames")
-	group := flag.String("group", "Ip",
-		"category to group entries by (default ip address)")
-	flag.Parse()
+	arguments := parse_args()
 
-	if len(os.Args) < 2 || flag.NFlag() == 0 {
-		println("Usage:", os.Args[0], "[OPTIONS] --file <file>")
-		flag.PrintDefaults()
-		os.Exit(1)
-	}
-
-	data := read_file(*file)
+	data := read_file(*arguments.file)
 	lines := bytes.Split(data, []byte("\n"))
 
 	m, n := parse(lines)
@@ -193,7 +205,7 @@ func main() {
 	// Determine struct field to group the entries by.
 	// Get element type since |m| is a Slice.
 	mirror := reflect.TypeOf(m).Elem()
-	field, success := mirror.FieldByName(*group)
+	field, success := mirror.FieldByName(*arguments.group)
 	if !success {
 		println("Unknown group type specified. Supported: ")
 		for i := 0; i < mirror.NumField(); i++ {
@@ -202,5 +214,5 @@ func main() {
 		os.Exit(1)
 	}
 
-	output(resolvehost, m, field)
+	output(&arguments, m, field)
 }
