@@ -8,10 +8,14 @@ Simply download / clone the repo then run:
 
 ```shell
 $ cd path/to/repo
-$ go build && ./golp path/to/access.log
+$ go build && ./golp -file path/to/access.log
+
+# ./golp -h for usage information
 ```
 
 ## TODO
+
+ - Allow for more log parser formats (only nginx logs are supported for now)
 
 ## License
 
