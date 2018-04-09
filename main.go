@@ -17,6 +17,7 @@ type args struct {
 	file        *string
 	resolvehost *bool
 	group       *string
+	verbose     *bool
 }
 
 func parse_args() args {
@@ -25,6 +26,7 @@ func parse_args() args {
 	rh := flag.Bool("resolve", false, "resolve ip addr to hostnames")
 	gr := flag.String("group", "Ip",
 		"category to group entries by (default ip address)")
+	vb := flag.Bool("verbose", false, "print unmatched lines as well")
 	flag.Parse()
 
 	if len(os.Args) < 2 || flag.NFlag() == 0 {
@@ -33,7 +35,7 @@ func parse_args() args {
 		os.Exit(1)
 	}
 
-	return args{fi, rh, gr}
+	return args{fi, rh, gr, vb}
 }
 
 type log_entry struct {
@@ -161,7 +163,8 @@ func group_by(entries []log_entry, field reflect.StructField) [][]log_entry {
 	return grouped
 }
 
-func output(arguments *args, entries []log_entry, field reflect.StructField) {
+func output(arguments *args, entries []log_entry, unmatched [][]byte,
+	field reflect.StructField) {
 	for _, g := range group_by(entries, field) {
 		if len(g) == 0 {
 			continue
@@ -186,6 +189,13 @@ func output(arguments *args, entries []log_entry, field reflect.StructField) {
 		}
 		fmt.Println("=====\n")
 	}
+
+	if *arguments.verbose {
+		fmt.Println("Unmatched lines:\n")
+		for _, v := range unmatched {
+			fmt.Println(string(v))
+		}
+	}
 }
 
 func main() {
@@ -196,9 +206,11 @@ func main() {
 
 	m, n := parse(lines)
 
-	fmt.Printf("Matches:     %v\n"+
-		"Nonmatches:  %v\n"+
-		"Total lines: %v\n\n", len(m), len(n), len(lines))
+	if *arguments.verbose {
+		fmt.Printf("Matches:     %v\n"+
+			"Nonmatches:  %v\n"+
+			"Total lines: %v\n\n", len(m), len(n), len(lines))
+	}
 
 	sort.Sort(byTimestamp(m))
 
@@ -214,5 +226,5 @@ func main() {
 		os.Exit(1)
 	}
 
-	output(&arguments, m, field)
+	output(&arguments, m, n, field)
 }
