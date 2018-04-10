@@ -115,8 +115,8 @@ func parse(content [][]byte) ([]log_entry, [][]byte) {
 		"\\[(\\d{1,2}\\/\\w{3}\\/\\d{4}):(\\d{2}:\\d{2}:\\d{2}).+" +
 		"(\"(GET|POST|HEAD) (\\/.*) (HTTP\\/\\d\\.\\d\")( (\\d{3}) (\\d.+) \"-\" \"(\\w.+)\")?)"
 
-	matches := []log_entry{}
-	nonmatches := [][]byte{}
+	var matches []log_entry
+	var nonmatches [][]byte
 
 	regex, _ := regexp.Compile(restr)
 	for _, v := range content {
@@ -170,8 +170,8 @@ func group_by(entries []log_entry, field reflect.StructField) [][]log_entry {
 	first := reflect.ValueOf(entries[i])
 	second := reflect.ValueOf(entries[j])
 
+	var grouped [][]log_entry
 	subgroup := []log_entry{first.Interface().(log_entry)}
-	grouped := [][]log_entry{}
 
 	for i < len(entries) && j < len(entries) {
 		second = reflect.ValueOf(entries[j])
