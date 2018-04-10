@@ -24,8 +24,7 @@ type args struct {
 func parse_args() args {
 	// Set command line arg flags.
 	fi := flag.String("file", "", "log file to analyze/parse")
-	gr := flag.String("group", "Ip",
-		"category to group entries by (default ip address)")
+	gr := flag.String("group", "Ip", "category to group entries by")
 	lt := flag.Bool("localtime", false, "convert timestamp into local time")
 	rh := flag.Bool("resolve", false, "resolve ip addr to hostnames")
 	vb := flag.Bool("verbose", false, "print unmatched lines as well")
