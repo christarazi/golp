@@ -38,12 +38,24 @@ func parse_args() args {
 	return args{fi, rh, gr, vb}
 }
 
+// Represents an HTTP request log entry.
+type request struct {
+	Method       string
+	Endpoint     string
+	HTTPVersion  string
+	ResponseCode string
+	Reserved     string
+	UserAgent    string
+}
+
+// Represents a general log entry.
 type log_entry struct {
 	Ip        string
 	Date      string
 	Time      string
 	Timestamp time.Time
 	Action    string
+	Request   request
 }
 
 // Methods for sort.Interface.
@@ -63,7 +75,7 @@ func (t byTimestamp) Less(i, j int) bool {
 
 // End of sort.Interface.
 
-func create_entry(ip, date, timestr, action []byte) log_entry {
+func create_entry(ip, date, timestr, action, method, endpoint, httpv, rescode, resv, uastr []byte) log_entry {
 	_date := string(date)
 	_timestr := string(timestr)
 	dt := _date + " " + _timestr
@@ -73,7 +85,13 @@ func create_entry(ip, date, timestr, action []byte) log_entry {
 		string(date),
 		string(timestr),
 		ts,
-		string(action)}
+		string(action),
+		request{string(method),
+			string(endpoint),
+			string(httpv),
+			string(rescode),
+			string(resv),
+			string(uastr)}}
 }
 
 func read_file(filename string) []byte {
@@ -94,7 +112,7 @@ func read_file(filename string) []byte {
 func parse(content [][]byte) ([]log_entry, [][]byte) {
 	restr := "(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) - - " +
 		"\\[(\\d{1,2}\\/\\w{3}\\/\\d{4}):(\\d{2}:\\d{2}:\\d{2}).+" +
-		"(\\\"GET.+\\\"){1,3}"
+		"(\"(GET|POST|HEAD) (\\/.*) (HTTP\\/\\d\\.\\d\")( (\\d{3}) (\\d.+) \"-\" \"(\\w.+)\")?)"
 
 	matches := []log_entry{}
 	nonmatches := [][]byte{}
@@ -103,11 +121,31 @@ func parse(content [][]byte) ([]log_entry, [][]byte) {
 	for _, v := range content {
 		if len(regex.Find(v)) != 0 {
 			submatches := regex.FindAllSubmatch(v, -1)[0]
+
 			ip := submatches[1]
 			date := submatches[2]
 			time := submatches[3]
 			action := submatches[4]
-			matches = append(matches, create_entry(ip, date, time, action))
+			method := submatches[5]
+			endpoint := submatches[6]
+			httpv := submatches[7]
+
+			var rescode []byte
+			var resv []byte
+			var uastr []byte
+
+			if len(submatches) == 8 {
+				matches = append(matches, create_entry(ip, date, time, action,
+					method, endpoint, httpv, rescode, resv, uastr))
+				continue
+			}
+
+			rescode = submatches[9]
+			resv = submatches[10]
+			uastr = submatches[11]
+
+			matches = append(matches, create_entry(ip, date, time, action,
+				method, endpoint, httpv, rescode, resv, uastr))
 		} else {
 			nonmatches = append(nonmatches, v)
 		}
@@ -163,27 +201,31 @@ func group_by(entries []log_entry, field reflect.StructField) [][]log_entry {
 	return grouped
 }
 
-func output(arguments *args, entries []log_entry, unmatched [][]byte,
-	field reflect.StructField) {
-	for _, g := range group_by(entries, field) {
-		if len(g) == 0 {
+func output(arguments *args, entries []log_entry, unmatched [][]byte, field reflect.StructField) {
+	for _, group := range group_by(entries, field) {
+		if len(group) == 0 {
 			continue
 		}
 
 		fmt.Printf("=====\n")
-		for _, v := range g {
+		for _, v := range group {
 			fmt.Printf("Timestamp: %v\n", v.Timestamp)
 
 			if *arguments.resolvehost {
 				names, err := net.LookupAddr(v.Ip)
 				if err != nil {
-					fmt.Printf("IP:        %v\nAction:    %v", v.Ip, v.Action)
+					fmt.Printf("IP:        %v\nMethod:    %v\nEndpoint:  %v\n"+
+						"UA:        %v",
+						v.Ip, v.Request.Method, v.Request.Endpoint, v.Request.UserAgent)
 				} else {
-					fmt.Printf("Hostname:  %v\nAction:    %v", names[0],
-						v.Action)
+					fmt.Printf("Hostname:  %v\nMethod:    %v\nEndpoint:  %v\n"+
+						"UA:        %v",
+						names[0], v.Request.Method, v.Request.Endpoint, v.Request.UserAgent)
 				}
 			} else {
-				fmt.Printf("IP:        %v\nAction:    %v", v.Ip, v.Action)
+				fmt.Printf("IP:        %v\nMethod:    %v\nEndpoint:  %v\n"+
+					"UA:        %v",
+					v.Ip, v.Request.Method, v.Request.Endpoint, v.Request.UserAgent)
 			}
 			fmt.Println("")
 		}
