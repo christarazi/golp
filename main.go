@@ -15,17 +15,19 @@ import (
 
 type args struct {
 	file        *string
-	resolvehost *bool
 	group       *string
+	localtime   *bool
+	resolvehost *bool
 	verbose     *bool
 }
 
 func parse_args() args {
 	// Set command line arg flags.
 	fi := flag.String("file", "", "log file to analyze/parse")
-	rh := flag.Bool("resolve", false, "resolve ip addr to hostnames")
 	gr := flag.String("group", "Ip",
 		"category to group entries by (default ip address)")
+	lt := flag.Bool("localtime", false, "convert timestamp into local time")
+	rh := flag.Bool("resolve", false, "resolve ip addr to hostnames")
 	vb := flag.Bool("verbose", false, "print unmatched lines as well")
 	flag.Parse()
 
@@ -35,7 +37,7 @@ func parse_args() args {
 		os.Exit(1)
 	}
 
-	return args{fi, rh, gr, vb}
+	return args{fi, gr, lt, rh, vb}
 }
 
 // Represents an HTTP request log entry.
@@ -209,7 +211,11 @@ func output(arguments *args, entries []log_entry, unmatched [][]byte, field refl
 
 		fmt.Printf("=====\n")
 		for _, v := range group {
-			fmt.Printf("Timestamp: %v\n", v.Timestamp)
+			if *arguments.localtime {
+				fmt.Printf("Timestamp: %v\n", v.Timestamp.Local())
+			} else {
+				fmt.Printf("Timestamp: %v\n", v.Timestamp)
+			}
 
 			if *arguments.resolvehost {
 				names, err := net.LookupAddr(v.Ip)
