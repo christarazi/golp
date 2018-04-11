@@ -107,7 +107,7 @@ func read_file(filename string) []byte {
 		os.Exit(1)
 	}
 
-	return data
+	return bytes.TrimSpace(data)
 }
 
 func parse(content [][]byte) ([]log_entry, [][]byte) {
