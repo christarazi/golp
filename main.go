@@ -197,7 +197,7 @@ func output(arguments *args, entries []log_entry, unmatched [][]byte, field refl
 			continue
 		}
 
-		fmt.Printf("=====\n")
+		fmt.Print("=====\n\n")
 		for _, v := range group {
 			if *arguments.localtime {
 				fmt.Printf("Timestamp: %v\n", v.Timestamp.Local())
@@ -223,11 +223,11 @@ func output(arguments *args, entries []log_entry, unmatched [][]byte, field refl
 			}
 			fmt.Println("")
 		}
-		fmt.Println("=====\n")
+		fmt.Print("=====\n\n")
 	}
 
 	if *arguments.verbose {
-		fmt.Println("Unmatched lines:\n")
+		fmt.Print("Unmatched lines:\n\n")
 		for _, v := range unmatched {
 			fmt.Println(string(v))
 		}
