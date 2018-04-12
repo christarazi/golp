@@ -113,37 +113,26 @@ func read_file(filename string) []byte {
 func parse(content [][]byte) ([]log_entry, [][]byte) {
 	restr := "(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) - - " +
 		"\\[(\\d{1,2}\\/\\w{3}\\/\\d{4}):(\\d{2}:\\d{2}:\\d{2}).+" +
-		"(\"(GET|POST|HEAD) (\\/.*) (HTTP\\/\\d\\.\\d\")( (\\d{3}) (\\d.+) \"-\" \"(\\w.+)\")?)"
+		"(\"(GET|POST|HEAD) (\\/.*) (HTTP\\/\\d\\.\\d)\" (\\d{3}) (\\d{3,4}) \".+\" \"(.+)\")"
 
 	var matches []log_entry
 	var nonmatches [][]byte
 
 	regex, _ := regexp.Compile(restr)
 	for _, v := range content {
-		if len(regex.Find(v)) != 0 {
-			submatches := regex.FindAllSubmatch(v, -1)[0]
+		if submatches := regex.FindAllSubmatch(v, -1); submatches != nil {
+			sb := submatches[0]
 
-			ip := submatches[1]
-			date := submatches[2]
-			time := submatches[3]
-			action := submatches[4]
-			method := submatches[5]
-			endpoint := submatches[6]
-			httpv := submatches[7]
-
-			var rescode []byte
-			var resv []byte
-			var uastr []byte
-
-			if len(submatches) == 8 {
-				matches = append(matches, create_entry(ip, date, time, action,
-					method, endpoint, httpv, rescode, resv, uastr))
-				continue
-			}
-
-			rescode = submatches[9]
-			resv = submatches[10]
-			uastr = submatches[11]
+			ip := sb[1]
+			date := sb[2]
+			time := sb[3]
+			action := sb[4]
+			method := sb[5]
+			endpoint := sb[6]
+			httpv := sb[7]
+			rescode := sb[8]
+			resv := sb[9]
+			uastr := sb[10]
 
 			matches = append(matches, create_entry(ip, date, time, action,
 				method, endpoint, httpv, rescode, resv, uastr))
