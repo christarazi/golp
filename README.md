@@ -19,6 +19,7 @@ $ go build && ./golp -file path/to/access.log
  - ~~Add ability to convert timestamp into local time~~
  - ~~Breakdown the "action" into: method, endpoint, user-agent, etc.~~
  - ~~Show unmatched lines (--verbose option?)~~
+ - If resolving IP addresses, cache the response
 
 ## License
 
