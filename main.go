@@ -113,7 +113,7 @@ func read_file(filename string) []byte {
 func parse(content [][]byte) ([]log_entry, [][]byte) {
 	restr := "(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) - - " +
 		"\\[(\\d{1,2}\\/\\w{3}\\/\\d{4}):(\\d{2}:\\d{2}:\\d{2}).+" +
-		"(\"(GET|POST|HEAD) (\\/.*) (HTTP\\/\\d\\.\\d)\" (\\d{3}) (\\d{3,4}) \".+\" \"(.+)\")"
+		"(\"(GET|POST|HEAD) (\\/.*) (HTTP\\/\\d\\.\\d)\" (\\d{3}) (\\d{1,5}) \".+\" \"(.+)\")"
 
 	var matches []log_entry
 	var nonmatches [][]byte
