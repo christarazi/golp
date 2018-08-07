@@ -36,7 +36,13 @@ func parse_args() args {
 		os.Exit(1)
 	}
 
-	return args{fi, gr, lt, rh, vb}
+	return args{
+		file:        fi,
+		group:       gr,
+		localtime:   lt,
+		resolvehost: rh,
+		verbose:     vb,
+	}
 }
 
 // Represents an HTTP request log entry.
@@ -82,17 +88,21 @@ func create_entry(ip, date, timestr, action, method, endpoint, httpv, rescode, r
 	dt := _date + " " + _timestr
 	ts, _ := time.Parse("02/Jan/2006 15:04:05 -0700", dt)
 
-	return logEntry{string(ip),
-		string(date),
-		string(timestr),
-		ts,
-		string(action),
-		request{string(method),
-			string(endpoint),
-			string(httpv),
-			string(rescode),
-			string(resv),
-			string(uastr)}}
+	return logEntry{
+		Ip:        string(ip),
+		Date:      string(date),
+		Time:      string(timestr),
+		Timestamp: ts,
+		Action:    string(action),
+		Request: request{
+			Method:       string(method),
+			Endpoint:     string(endpoint),
+			HTTPVersion:  string(httpv),
+			ResponseCode: string(rescode),
+			Reserved:     string(resv),
+			UserAgent:    string(uastr),
+		},
+	}
 }
 
 func read_file(filename string) []byte {
