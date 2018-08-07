@@ -50,7 +50,7 @@ type request struct {
 }
 
 // Represents a general log entry.
-type log_entry struct {
+type logEntry struct {
 	Ip        string
 	Date      string
 	Time      string
@@ -60,7 +60,7 @@ type log_entry struct {
 }
 
 // Methods for sort.Interface.
-type byTimestamp []log_entry
+type byTimestamp []logEntry
 
 func (t byTimestamp) Len() int {
 	return len(t)
@@ -76,13 +76,13 @@ func (t byTimestamp) Less(i, j int) bool {
 
 // End of sort.Interface.
 
-func create_entry(ip, date, timestr, action, method, endpoint, httpv, rescode, resv, uastr []byte) log_entry {
+func create_entry(ip, date, timestr, action, method, endpoint, httpv, rescode, resv, uastr []byte) logEntry {
 	_date := string(date)
 	_timestr := string(timestr)
 	dt := _date + " " + _timestr
 	ts, _ := time.Parse("02/Jan/2006 15:04:05 -0700", dt)
 
-	return log_entry{string(ip),
+	return logEntry{string(ip),
 		string(date),
 		string(timestr),
 		ts,
@@ -110,12 +110,12 @@ func read_file(filename string) []byte {
 	return bytes.TrimSpace(data)
 }
 
-func parse(content [][]byte) ([]log_entry, [][]byte) {
+func parse(content [][]byte) ([]logEntry, [][]byte) {
 	restr := "(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}) - - " +
 		"\\[(\\d{1,2}\\/\\w{3}\\/\\d{4}):(\\d{2}:\\d{2}:\\d{2} [-\\+]\\d{4}).+" +
 		"(\"(GET|POST|HEAD) (\\/.*) (HTTP\\/\\d\\.\\d)\" (\\d{3}) (\\d{1,5}) \".+\" \"(.+)\")"
 
-	var matches []log_entry
+	var matches []logEntry
 	var nonmatches [][]byte
 
 	regex, _ := regexp.Compile(restr)
@@ -144,13 +144,13 @@ func parse(content [][]byte) ([]log_entry, [][]byte) {
 	return matches, nonmatches
 }
 
-func group_by(entries []log_entry, field reflect.StructField) [][]log_entry {
+func group_by(entries []logEntry, field reflect.StructField) [][]logEntry {
 
 	// This function is quite ugly because of Golang's lack of generics. It
 	// would have been extremely useful here.
 
 	if len(entries) == 1 {
-		return [][]log_entry{{entries[0]}}
+		return [][]logEntry{{entries[0]}}
 	}
 
 	i := 0 // Using a two iterator approach here.
@@ -159,8 +159,8 @@ func group_by(entries []log_entry, field reflect.StructField) [][]log_entry {
 	first := reflect.ValueOf(entries[i])
 	second := reflect.ValueOf(entries[j])
 
-	var grouped [][]log_entry
-	subgroup := []log_entry{first.Interface().(log_entry)}
+	var grouped [][]logEntry
+	subgroup := []logEntry{first.Interface().(logEntry)}
 
 	for i < len(entries) && j < len(entries) {
 		second = reflect.ValueOf(entries[j])
@@ -169,7 +169,7 @@ func group_by(entries []log_entry, field reflect.StructField) [][]log_entry {
 		b := second.FieldByName(field.Name).Interface()
 
 		if a == b {
-			subgroup = append(subgroup, second.Interface().(log_entry))
+			subgroup = append(subgroup, second.Interface().(logEntry))
 		} else {
 			grouped = append(grouped, subgroup)
 
@@ -177,7 +177,7 @@ func group_by(entries []log_entry, field reflect.StructField) [][]log_entry {
 			first = reflect.ValueOf(entries[i])
 
 			subgroup = nil // Clear slice for new subgroup.
-			subgroup = append(subgroup, first.Interface().(log_entry))
+			subgroup = append(subgroup, first.Interface().(logEntry))
 		}
 
 		j += 1
@@ -191,7 +191,7 @@ func group_by(entries []log_entry, field reflect.StructField) [][]log_entry {
 	return grouped
 }
 
-func output(arguments *args, entries []log_entry, unmatched [][]byte, field reflect.StructField) {
+func output(arguments *args, entries []logEntry, unmatched [][]byte, field reflect.StructField) {
 	for _, group := range group_by(entries, field) {
 		if len(group) == 0 {
 			continue

@@ -36,47 +36,47 @@ func TestParse(t *testing.T) {
 			EXPECTED_MATCHES, len(matches))
 	}
 
-	expected_entries := []log_entry{
-		log_entry{Ip: "95.213.130.90", Date: "08/Apr/2018", Time: "07:54:55 -0400",
+	expected_entries := []logEntry{
+		logEntry{Ip: "95.213.130.90", Date: "08/Apr/2018", Time: "07:54:55 -0400",
 			Action: "\"GET /_asterisk/ HTTP/1.1\" 404 136 \"-\" \"python-requests/2.18.4\"",
 			Request: request{Method: "GET", Endpoint: "/_asterisk/", HTTPVersion: "HTTP/1.1",
 				ResponseCode: "404", Reserved: "136", UserAgent: "python-requests/2.18.4"}},
 
-		log_entry{Ip: "184.105.139.70", Date: "08/Apr/2018", Time: "09:26:24 -0400",
+		logEntry{Ip: "184.105.139.70", Date: "08/Apr/2018", Time: "09:26:24 -0400",
 			Action: "\"GET / HTTP/1.1\" 200 3997 \"-\" \"-\"",
 			Request: request{Method: "GET", Endpoint: "/", HTTPVersion: "HTTP/1.1",
 				ResponseCode: "200", Reserved: "3997", UserAgent: "-"}},
 
-		log_entry{Ip: "216.218.206.66", Date: "08/Apr/2018", Time: "10:24:07 -0400",
+		logEntry{Ip: "216.218.206.66", Date: "08/Apr/2018", Time: "10:24:07 -0400",
 			Action: "\"GET / HTTP/1.1\" 200 3997 \"-\" \"-\"",
 			Request: request{Method: "GET", Endpoint: "/", HTTPVersion: "HTTP/1.1",
 				ResponseCode: "200", Reserved: "3997", UserAgent: "-"}},
 
-		log_entry{Ip: "185.234.15.88", Date: "08/Apr/2018", Time: "10:27:23 -0400",
+		logEntry{Ip: "185.234.15.88", Date: "08/Apr/2018", Time: "10:27:23 -0400",
 			Action: "\"GET /xmlrpc.php HTTP/1.1\" 301 178 \"-\" \"Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.6) Gecko/20070725 Firefox/2.0.0.6\"",
 			Request: request{Method: "GET", Endpoint: "/xmlrpc.php", HTTPVersion: "HTTP/1.1",
 				ResponseCode: "301", Reserved: "178",
 				UserAgent: "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.6) Gecko/20070725 Firefox/2.0.0.6"}},
 
-		log_entry{Ip: "201.6.107.126", Date: "08/Apr/2018", Time: "10:33:40 -0400",
+		logEntry{Ip: "201.6.107.126", Date: "08/Apr/2018", Time: "10:33:40 -0400",
 			Action: "\"GET /admin/config.php HTTP/1.1\" 404 162 \"-\" \"curl/7.15.5 (x86_64-redhat-linux-gnu) libcurl/7.15.5 OpenSSL/0.9.8b zlib/1.2.3 libidn/0.6.5\"",
 			Request: request{Method: "GET", Endpoint: "/admin/config.php", HTTPVersion: "HTTP/1.1",
 				ResponseCode: "404", Reserved: "162",
 				UserAgent: "curl/7.15.5 (x86_64-redhat-linux-gnu) libcurl/7.15.5 OpenSSL/0.9.8b zlib/1.2.3 libidn/0.6.5"}},
 
-		log_entry{Ip: "159.203.121.40", Date: "08/Apr/2018", Time: "10:47:23 -0400",
+		logEntry{Ip: "159.203.121.40", Date: "08/Apr/2018", Time: "10:47:23 -0400",
 			Action: "\"GET / HTTP/1.0\" 200 3997 \"-\" \"Mozilla/5.0 (compatible; NetcraftSurveyAgent/1.0; +info@netcraft.com)\"",
 			Request: request{Method: "GET", Endpoint: "/", HTTPVersion: "HTTP/1.0",
 				ResponseCode: "200", Reserved: "3997",
 				UserAgent: "Mozilla/5.0 (compatible; NetcraftSurveyAgent/1.0; +info@netcraft.com)"}},
 
-		log_entry{Ip: "185.234.15.88", Date: "08/Apr/2018", Time: "10:48:52 -0400",
+		logEntry{Ip: "185.234.15.88", Date: "08/Apr/2018", Time: "10:48:52 -0400",
 			Action: "\"GET /xmlrpc.php HTTP/1.1\" 301 178 \"-\" \"Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.6) Gecko/20070725 Firefox/2.0.0.6\"",
 			Request: request{Method: "GET", Endpoint: "/xmlrpc.php", HTTPVersion: "HTTP/1.1",
 				ResponseCode: "301", Reserved: "178",
 				UserAgent: "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.6) Gecko/20070725 Firefox/2.0.0.6"}},
 
-		log_entry{Ip: "5.79.69.140", Date: "08/Apr/2018", Time: "11:09:40 -0400",
+		logEntry{Ip: "5.79.69.140", Date: "08/Apr/2018", Time: "11:09:40 -0400",
 			Action: "\"GET /recordings/ HTTP/1.1\" 400 264 \"-\" \"curl/7.29.0\"",
 			Request: request{Method: "GET", Endpoint: "/recordings/", HTTPVersion: "HTTP/1.1",
 				ResponseCode: "400", Reserved: "264", UserAgent: "curl/7.29.0"}},
